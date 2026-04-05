@@ -1,12 +1,6 @@
-# Python cache files
 __pycache__/
 *.pyc
-
-# Jupyter notebook checkpoints
 .ipynb_checkpoints/
-
-# Model files
-*.pkl
-
-# Dataset files (if too large or private)
-*.csv
+.env
+.venv/
+.DS_Store

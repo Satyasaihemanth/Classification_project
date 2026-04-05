@@ -1,21 +1,52 @@
+# app.py
 import streamlit as st
 import requests
 
+st.set_page_config(page_title="Stroke Prediction", page_icon="🧠")
+
 st.title("🧠 Stroke Prediction App")
 
-# Inputs
+# ---------------- INPUTS ---------------- #
 gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-age = st.number_input("Age", min_value=1)
+age = st.number_input("Age", min_value=0, max_value=120)
+
 hypertension = st.selectbox("Hypertension", [0, 1])
 heart_disease = st.selectbox("Heart Disease", [0, 1])
-ever_married = st.selectbox("Ever Married", ["Yes", "No"])
-work_type = st.selectbox("Work Type", ["Private", "Self-employed", "Govt_job", "children", "Never_worked"])
-residence = st.selectbox("Residence Type", ["Urban", "Rural"])
-glucose = st.number_input("Avg Glucose Level")
-bmi = st.number_input("BMI")
-smoking = st.selectbox("Smoking Status", ["formerly smoked", "never smoked", "smokes", "Unknown"])
 
+ever_married = st.selectbox("Ever Married", ["Yes", "No"])
+
+work_type = st.selectbox(
+    "Work Type",
+    ["Private", "Self-employed", "Govt_job", "children", "Never_worked"]
+)
+
+residence = st.selectbox("Residence Type", ["Urban", "Rural"])
+
+glucose = st.number_input("Avg Glucose Level", min_value=0.0)
+
+bmi = st.number_input("BMI", min_value=0.0)
+
+smoking = st.selectbox(
+    "Smoking Status",
+    ["formerly smoked", "never smoked", "smokes", "Unknown"]
+)
+
+# ---------------- BUTTON ---------------- #
 if st.button("Predict"):
+
+    # ✅ VALIDATION (REALISTIC)
+    if age <= 0 or age > 120:
+        st.warning("⚠️ Enter valid age (1–120)")
+        st.stop()
+
+    if glucose < 50 or glucose > 300:
+        st.warning("⚠️ Glucose should be between 50–300")
+        st.stop()
+
+    if bmi < 10 or bmi > 70:
+        st.warning("⚠️ BMI should be between 10–70")
+        st.stop()
+
     url = "http://127.0.0.1:8000/predict"
 
     data = {
@@ -32,18 +63,14 @@ if st.button("Predict"):
     }
 
     try:
-        response = requests.post(url, json=data)
-        result = response.json()
+        with st.spinner("Predicting..."):
+            response = requests.post(url, json=data)
+            result = response.json()
 
-        st.write(result)  # debug output
-
-        if "prediction" in result:
-            if result["prediction"] == 1:
-                st.error("⚠️ High Risk of Stroke")
-            else:
-                st.success("✅ Low Risk of Stroke")
+        if result["prediction"] == 1:
+            st.error("⚠️ High Risk of Stroke")
         else:
-            st.error(result["error"])
+            st.success("✅ Low Risk of Stroke")
 
-    except Exception as e:
-        st.error(f"Connection Error: {e}")
+    except:
+        st.error("❌ Connection Error: Backend not running")
